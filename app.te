@@ -189,11 +189,23 @@ allow appdomain fuse:dir create_dir_perms;
 allow appdomain fuse:file create_file_perms;
 allow appdomain sdcardfs:dir create_dir_perms;
 allow appdomain sdcardfs:file create_file_perms;
+allow appdomain vfat:dir create_dir_perms;
+allow appdomain vfat:file create_file_perms;
+
+# Read/write rules for f2fs/ext4 and exfat visible storage via sdcardfs
+ifelse(shipping_build, `true', ,
+  allow appdomain sdcard_posix:dir create_dir_perms;
+  allow appdomain sdcard_posix:file create_file_perms;
+  allow appdomain fuseblk:dir create_dir_perms;
+  allow appdomain fuseblk:file create_file_perms;
+)
 
 # Access OBBs (vfat images) mounted by vold (b/17633509)
 # File write access allowed for FDs returned through Storage Access Framework
 allow appdomain vfat:dir r_dir_perms;
 allow appdomain vfat:file rw_file_perms;
+allow appdomain sdcard_posix:dir r_dir_perms;
+allow appdomain sdcard_posix:file rw_file_perms;
 
 # Allow apps to use the USB Accessory interface.
 # http://developer.android.com/guide/topics/connectivity/usb/accessory.html
@@ -362,7 +374,7 @@ neverallow appdomain exec_type:file
 # This is the default type for anything under /data not otherwise
 # specified in file_contexts.  Define a different type for portions
 # that should be writable by apps.
-neverallow appdomain system_data_file:dir_file_class_set
+neverallow { appdomain -interfacer } system_data_file:dir_file_class_set
     { create write setattr relabelfrom relabelto append unlink link rename };
 
 # Write to various other parts of /data.
@@ -456,3 +468,7 @@ neverallow {
 # Foreign dex profiles are just markers. Prevent apps to do anything but touch them.
 neverallow appdomain user_profile_foreign_dex_data_file:file rw_file_perms;
 neverallow appdomain user_profile_foreign_dex_data_file:dir { open getattr read ioctl remove_name };
+
+# Themed resources (i.e. composed icons)
+allow appdomain theme_data_file:dir r_dir_perms;
+allow appdomain theme_data_file:file r_file_perms;

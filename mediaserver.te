@@ -94,6 +94,12 @@ allow mediaserver processinfo_service:service_manager find;
 allow mediaserver scheduling_policy_service:service_manager find;
 allow mediaserver surfaceflinger_service:service_manager find;
 
+ifelse(target_has_legacy_camera_hal1, `true',
+  allow mediaserver cameraproxy_service:service_manager find;
+  allow mediaserver cameraserver_service:service_manager add;
+,
+)
+
 # /oem access
 allow mediaserver oemfs:dir search;
 allow mediaserver oemfs:file r_file_perms;
@@ -133,3 +139,7 @@ neverallow mediaserver { file_type fs_type }:file execute_no_trans;
 
 # do not allow privileged socket ioctl commands
 neverallowxperm mediaserver domain:{ rawip_socket tcp_socket udp_socket } ioctl priv_sock_ioctls;
+
+# Themed resources (i.e. composed icons)
+allow mediaserver theme_data_file:dir r_dir_perms;
+allow mediaserver theme_data_file:file r_file_perms;
